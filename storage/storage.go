@@ -14,10 +14,10 @@ import (
 )
 
 type Environment struct {
-	Temperature int64 `gorm:"primaryKey"`
+	Temperature int64
 	Pressure    int64
 	Humidity    int32
-	Time        int64
+	Time        int64 `gorm:"primaryKey"`
 }
 
 func (e Environment) String() interface{} {
