@@ -15,7 +15,7 @@ const (
 	scanFreq             = 40 * time.Millisecond
 	temperatureThreshold = 37
 	temperatureZone      = 0.1
-	logFrequency         = time.Second
+	logFrequency         = time.Second * 10
 	// ZeroCelsius static variable for Celsius Kelvin conversion
 	ZeroCelsius = 237.7
 	aConstant   = 17.27
@@ -112,7 +112,7 @@ func (d *Demeter) Start() {
 			return
 		case env = <-envCh:
 			fmt.Printf(
-				"Temperature: %s\nHumidity: %s\nPressure: %s",
+				"Temperature: %s\nHumidity: %s\nPressure: %s\n",
 				env.Temperature,
 				env.Humidity,
 				env.Pressure,
