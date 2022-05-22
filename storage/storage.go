@@ -66,7 +66,7 @@ func (s *Storage) Put(event *weather_station.Environment) error {
 		time:        event.Time,
 	}
 	s.logger.Info(context.TODO(), "storage.Put: %s", storageEvent.String())
-	tx := s.db.Create(&storageEvent)
+	tx := s.db.Create(storageEvent)
 	return tx.Error
 }
 
