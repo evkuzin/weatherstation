@@ -30,9 +30,13 @@ func peripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
 
 	// Having drivers failing to load may not require process termination. It
 	// is possible to continue to run in partial failure mode.
-	logger.Warnf("Drivers failed to load:\n")
-	for _, failure := range state.Failed {
-		logger.Debugf("- %s: %v\n", failure.D, failure.Err)
+	if state.Failed != nil {
+		if len(state.Failed) > 0 {
+			logger.Warnf("Drivers failed to load:\n")
+			for _, failure := range state.Failed {
+				logger.Debugf("- %s: %v\n", failure.D, failure.Err)
+			}
+		}
 	}
 
 	// Open default I2C bus
