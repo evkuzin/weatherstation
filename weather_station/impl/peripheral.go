@@ -1,7 +1,6 @@
 package impl
 
 import (
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"os"
 	"periph.io/x/conn/v3/i2c"
@@ -14,7 +13,7 @@ func peripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
 	// Make sure peripheral is initialized.
 	state, err := host.Init()
 	if err != nil {
-		logger.Debugf("failed to initialize periph: %v", err)
+		logger.Errorf("failed to initialize periph: %v", err)
 	}
 
 	// Prints the loaded driver.
@@ -31,7 +30,7 @@ func peripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
 
 	// Having drivers failing to load may not require process termination. It
 	// is possible to continue to run in partial failure mode.
-	logger.Debugf("Drivers failed to load:\n")
+	logger.Warnf("Drivers failed to load:\n")
 	for _, failure := range state.Failed {
 		logger.Debugf("- %s: %v\n", failure.D, failure.Err)
 	}
@@ -39,8 +38,7 @@ func peripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
 	// Open default I2C bus
 	bus, err := i2creg.Open("")
 	if err != nil {
-		logger.Debugf("cannot open a bus")
-		logger.Debugf(err.Error())
+		logger.Warnf("cannot open a bus: %s", err)
 		os.Exit(1)
 	} else {
 		logger.Debugf("I2C bus open call successful. Got: %v", bus.String())
@@ -48,7 +46,7 @@ func peripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
 	defer func(bus i2c.BusCloser) {
 		err := bus.Close()
 		if err != nil {
-			fmt.Errorf("error: %s", err.Error())
+			logger.Errorf("error: %s", err.Error())
 		}
 	}(bus)
 

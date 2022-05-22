@@ -29,6 +29,7 @@ func main() {
 		logger.Errorf("cannot init weather station: %s", err)
 		os.Exit(1)
 	}
+	logger.Info("peripheral init complete...")
 	wg.Add(1)
 	go ws.Start()
 
