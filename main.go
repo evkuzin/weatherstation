@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/evkuzin/weatherstation/config"
-	"github.com/evkuzin/weatherstation/weather_station"
+	"github.com/evkuzin/weatherstation/weather_station/impl"
 	"net/http"
 	"os"
 	"sync"
@@ -23,7 +23,7 @@ func main() {
 		logger.Errorf("cannot parse config: %s", err)
 		os.Exit(1)
 	}
-	ws := weather_station.NewWeatherStation()
+	ws := impl.NewWeatherStation()
 	err = ws.Init(conf, logger)
 	if err != nil {
 		logger.Errorf("cannot init weather station: %s", err)

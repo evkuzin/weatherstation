@@ -1,4 +1,4 @@
-package weather_station
+package impl
 
 import (
 	"fmt"

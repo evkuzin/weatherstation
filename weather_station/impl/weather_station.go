@@ -1,9 +1,10 @@
-package weather_station
+package impl
 
 import (
 	"fmt"
 	"github.com/evkuzin/weatherstation/config"
 	"github.com/evkuzin/weatherstation/storage"
+	"github.com/evkuzin/weatherstation/weather_station"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/go-echarts/go-echarts/v2/types"
@@ -106,7 +107,7 @@ func (ws *weatherStationImpl) Start() {
 				env.Humidity,
 				env.Pressure,
 			)
-			err := ws.Storage.Put(&Environment{
+			err := ws.Storage.Put(&weather_station.Environment{
 				Temperature: int64(env.Temperature),
 				Pressure:    int64(env.Pressure),
 				Humidity:    int32(env.Humidity),
@@ -120,7 +121,7 @@ func (ws *weatherStationImpl) Start() {
 }
 
 // NewWeatherStation return a new instance of a weatherStationImpl daemon
-func NewWeatherStation() WeatherStation {
+func NewWeatherStation() weather_station.WeatherStation {
 
 	return &weatherStationImpl{}
 }
