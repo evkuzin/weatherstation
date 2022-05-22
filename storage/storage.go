@@ -17,7 +17,7 @@ type Environment struct {
 	Temperature int64 `gorm:"primaryKey"`
 	Pressure    int64
 	Humidity    int32
-	Time        time.Time
+	Time        int64
 }
 
 func (e Environment) String() interface{} {

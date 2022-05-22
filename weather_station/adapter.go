@@ -4,14 +4,13 @@ import (
 	"github.com/evkuzin/weatherstation/config"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"time"
 )
 
 type Environment struct {
 	Temperature int64
 	Pressure    int64
 	Humidity    int32
-	Time        time.Time
+	Time        int64
 }
 
 type WeatherStation interface {

@@ -88,7 +88,7 @@ func (ws *weatherStationImpl) Start() {
 				Temperature: int64(env.Temperature),
 				Pressure:    int64(env.Pressure),
 				Humidity:    int32(env.Humidity),
-				Time:        time.Now(),
+				Time:        time.Now().Unix(),
 			})
 			if err != nil {
 				ws.logger.Warnf("cannot write to storage: %s", err.Error())
