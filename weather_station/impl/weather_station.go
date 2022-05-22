@@ -1,7 +1,6 @@
 package impl
 
 import (
-	"fmt"
 	"github.com/evkuzin/weatherstation/config"
 	"github.com/evkuzin/weatherstation/storage"
 	"github.com/evkuzin/weatherstation/weather_station"
@@ -78,7 +77,7 @@ func (ws *weatherStationImpl) Start() {
 			ws.logger.Info("Stopping weatherStationImpl")
 			return
 		case env = <-envCh:
-			fmt.Printf(
+			ws.logger.Debugf(
 				"Temperature: %s\nHumidity: %s\nPressure: %s\n\n",
 				env.Temperature,
 				env.Humidity,
