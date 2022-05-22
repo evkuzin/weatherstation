@@ -1,4 +1,4 @@
-module weather_station
+module github.com/evkuzin/weatherstation
 
 go 1.18
 
