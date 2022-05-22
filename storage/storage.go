@@ -20,6 +20,10 @@ type Environment struct {
 	time        time.Time
 }
 
+func (e Environment) String() interface{} {
+	return fmt.Sprintf("T: %d; H: %d; P: %d", e.temperature, e.humidity, e.pressure)
+}
+
 type Storage struct {
 	db     *gorm.DB
 	logger logger.Interface
@@ -61,7 +65,7 @@ func (s *Storage) Put(event *weather_station.Environment) error {
 		humidity:    event.Humidity,
 		time:        event.Time,
 	}
-	s.logger.Info(context.TODO(), "storage.Put: %s", storageEvent)
+	s.logger.Info(context.TODO(), "storage.Put: %s", storageEvent.String())
 	tx := s.db.Create(&storageEvent)
 	return tx.Error
 }
