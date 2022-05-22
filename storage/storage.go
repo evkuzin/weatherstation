@@ -55,13 +55,14 @@ func (s *Storage) Init(config *config.Config) error {
 }
 
 func (s *Storage) Put(event *weather_station.Environment) error {
-	s.logger.Info(context.TODO(), "storage.Put: %s", event)
-	tx := s.db.Create(&Environment{
+	storageEvent := &Environment{
 		temperature: event.Temperature,
 		pressure:    event.Pressure,
 		humidity:    event.Humidity,
 		time:        event.Time,
-	})
+	}
+	s.logger.Info(context.TODO(), "storage.Put: %s", storageEvent)
+	tx := s.db.Create(&storageEvent)
 	return tx.Error
 }
 
