@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"github.com/evkuzin/weatherstation/config"
 	"github.com/evkuzin/weatherstation/weather_station"
@@ -20,7 +21,8 @@ type Environment struct {
 }
 
 type Storage struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger logger.Interface
 }
 
 func (s *Storage) Init(config *config.Config) error {
@@ -33,6 +35,7 @@ func (s *Storage) Init(config *config.Config) error {
 			Colorful:                  true,        // Disable color
 		},
 	)
+	s.logger = newLogger
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		config.Database.Host,
 		config.Database.User,
@@ -52,6 +55,7 @@ func (s *Storage) Init(config *config.Config) error {
 }
 
 func (s *Storage) Put(event *weather_station.Environment) error {
+	s.logger.Info(context.TODO(), "storage.Put: %s", event)
 	tx := s.db.Create(&Environment{
 		temperature: event.Temperature,
 		pressure:    event.Pressure,
