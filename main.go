@@ -14,7 +14,7 @@ func main() {
 	logger := &logrus.Logger{
 		Out:          os.Stdout,
 		Formatter:    &logrus.TextFormatter{},
-		Level:        logrus.DebugLevel,
+		Level:        logrus.InfoLevel,
 		ReportCaller: true,
 	}
 	wg := &sync.WaitGroup{}
