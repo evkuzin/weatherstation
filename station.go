@@ -112,7 +112,7 @@ func (d *Demeter) Start() {
 			return
 		case env = <-envCh:
 			fmt.Printf(
-				"Temperature: %s\nHumidity: %s\nPressure: %s\n",
+				"Temperature: %s\nHumidity: %s\nPressure: %s\n\n",
 				env.Temperature,
 				env.Humidity,
 				env.Pressure,
