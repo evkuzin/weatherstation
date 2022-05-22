@@ -32,6 +32,10 @@ func (s *Storage) Init(config *config.Config) error {
 		return err
 	}
 	s.db = db
+	err = s.db.AutoMigrate(&Environment{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
