@@ -14,6 +14,7 @@ import (
 )
 
 type Environment struct {
+	gorm.Model
 	temperature int64 `gorm:"primaryKey"`
 	pressure    int64
 	humidity    int32
