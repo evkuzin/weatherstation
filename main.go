@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/evkuzin/weatherstation/config"
 	"github.com/evkuzin/weatherstation/weather_station"
 	"net/http"
 	"os"
@@ -17,22 +18,19 @@ func main() {
 		ReportCaller: true,
 	}
 	wg := &sync.WaitGroup{}
-
-	sensor, err := weather_station.PeripheralInitialisation(logger)
+	conf, err := config.NewConfig("config.yaml")
 	if err != nil {
-		logger.Errorf("cannot init periph: %s", err.Error())
+		logger.Errorf("cannot parse config: %s", err)
 		os.Exit(1)
 	}
-	defer func() {
-		err := sensor.Halt()
-		if err != nil {
-			logger.Warnf("Error during shutdown sensor: %v", err.Error())
-		}
-	}()
-	ch := make(chan struct{}, 1)
-	ws := weather_station.NewWeatherStation(sensor, logger, ch, wg)
+	ws := weather_station.NewWeatherStation()
+	err = ws.Init(conf, logger)
+	if err != nil {
+		logger.Errorf("cannot init weather station: %s", err)
+		os.Exit(1)
+	}
 	wg.Add(1)
-	ws.Start()
+	go ws.Start()
 
 	err = http.ListenAndServe(":8080", ws)
 	if err != nil {
