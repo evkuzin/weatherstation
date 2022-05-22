@@ -21,7 +21,7 @@ type Environment struct {
 }
 
 func (e Environment) String() interface{} {
-	return fmt.Sprintf("T: %d; H: %d; P: %d", e.temperature, e.humidity, e.pressure)
+	return fmt.Sprintf("T: %d; H: %d; P: %d", e.Temperature, e.Humidity, e.Pressure)
 }
 
 type Storage struct {
@@ -60,10 +60,10 @@ func (s *Storage) Init(config *config.Config) error {
 
 func (s *Storage) Put(event *weather_station.Environment) error {
 	storageEvent := Environment{
-		temperature: event.Temperature,
-		pressure:    event.Pressure,
-		humidity:    event.Humidity,
-		time:        event.Time,
+		Temperature: event.Temperature,
+		Pressure:    event.Pressure,
+		Humidity:    event.Humidity,
+		Time:        event.Time,
 	}
 	s.logger.Info(context.TODO(), "storage.Put: %s", storageEvent.String())
 	tx := s.db.Create(&storageEvent)
@@ -72,7 +72,7 @@ func (s *Storage) Put(event *weather_station.Environment) error {
 
 func (s *Storage) GetEvents(t time.Duration) []weather_station.Environment {
 	var events []weather_station.Environment
-	s.db.Where("time > (?)", t).Find(&events)
+	s.db.Where("Time > (?)", t).Find(&events)
 	return events
 }
 
