@@ -1,11 +1,13 @@
 package storage
 
 import (
-	"context"
-	"weather_station/config"
+	"github.com/evkuzin/weatherstation/config"
+	"github.com/evkuzin/weatherstation/weather_station"
+	"time"
 )
 
-type adapter interface {
-	Init(ctx context.Context, config *config.Config) error
-	Put(ctx context.Context, event *Event) error
+type Adapter interface {
+	Init(config *config.Config) error
+	Put(event *weather_station.Environment) error
+	GetEvents(t time.Duration) []weather_station.Environment
 }

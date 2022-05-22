@@ -1,4 +1,4 @@
-package main
+package weather_station
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"periph.io/x/host/v3"
 )
 
-func PeripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
+func peripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
 	// Make sure peripheral is initialized.
 	state, err := host.Init()
 	if err != nil {

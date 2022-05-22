@@ -1,16 +1,56 @@
 package storage
 
 import (
+	"fmt"
+	"github.com/evkuzin/weatherstation/config"
+	"github.com/evkuzin/weatherstation/weather_station"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"time"
-	"weather_station/weather_station"
 )
 
+type Environment struct {
+	temperature int64 `gorm:"primaryKey"`
+	pressure    int64
+	humidity    int32
+	time        time.Time
+}
+
 type Storage struct {
+	db *gorm.DB
 }
 
-func (s *Storage) GetStats(time time.Duration) {
-
+func (s *Storage) Init(config *config.Config) error {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		config.Database.Host,
+		config.Database.User,
+		config.Database.Password,
+		config.Database.Database,
+		config.Database.Port)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return err
+	}
+	s.db = db
+	return nil
 }
 
-func (s *Storage) Put(event *weather_station.Environment) {
+func (s *Storage) Put(event *weather_station.Environment) error {
+	tx := s.db.Create(&Environment{
+		temperature: event.Temperature,
+		pressure:    event.Pressure,
+		humidity:    event.Humidity,
+		time:        event.Time,
+	})
+	return tx.Error
+}
+
+func (s *Storage) GetEvents(t time.Duration) []weather_station.Environment {
+	var events []weather_station.Environment
+	s.db.Where("time > (?)", t).Find(&events)
+	return events
+}
+
+func NewStorage() Adapter {
+	return &Storage{}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/evkuzin/weatherstation/weather_station"
 	"net/http"
 	"os"
 	"sync"
@@ -17,7 +18,7 @@ func main() {
 	}
 	wg := &sync.WaitGroup{}
 
-	sensor, err := PeripheralInitialisation(logger)
+	sensor, err := weather_station.PeripheralInitialisation(logger)
 	if err != nil {
 		logger.Errorf("cannot init periph: %s", err.Error())
 		os.Exit(1)
@@ -29,7 +30,7 @@ func main() {
 		}
 	}()
 	ch := make(chan struct{}, 1)
-	ws := NewWeatherStation(sensor, logger, ch, wg)
+	ws := weather_station.NewWeatherStation(sensor, logger, ch, wg)
 	wg.Add(1)
 	ws.Start()
 
