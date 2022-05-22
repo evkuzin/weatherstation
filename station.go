@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	scanFreq             = 40 * time.Millisecond
+	scanFreq             = 2 * time.Second
 	temperatureThreshold = 37
 	temperatureZone      = 0.1
 	logFrequency         = time.Second * 10
