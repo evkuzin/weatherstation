@@ -9,6 +9,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/go-echarts/go-echarts/v2/types"
 	"net/http"
+	"periph.io/x/conn/v3/i2c"
 	"sync"
 	"time"
 
@@ -30,15 +31,17 @@ type weatherStationImpl struct {
 	stop    chan struct{}
 	wg      *sync.WaitGroup
 	Storage storage.Adapter
+	bus     i2c.BusCloser
 }
 
 func (ws *weatherStationImpl) Init(config *config.Config, logger *logrus.Logger) error {
-	sensor, err := peripheralInitialisation(logger)
+	bus, sensor, err := peripheralInitialisation(logger)
 	if err != nil {
 		return err
 	}
 	ws.sensor = sensor
 	ws.logger = logger
+	ws.bus = bus
 	ws.Storage = storage.NewStorage()
 	err = ws.Storage.Init(config)
 	if err != nil {
@@ -47,40 +50,14 @@ func (ws *weatherStationImpl) Init(config *config.Config, logger *logrus.Logger)
 	return nil
 }
 
-func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
-	// create a new line instance
-	line := charts.NewLine()
-	// set some global options like Title/Legend/ToolTip or anything else
-	line.SetGlobalOptions(
-		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
-		charts.WithTitleOpts(opts.Title{
-			Title: "Temperature",
-		}))
-	samples := ws.Storage.GetEvents(time.Minute * 5)
-	xTime := make([]int64, len(samples))
-	yTemperature := make([]opts.LineData, len(samples))
-	//var symbol string
-	//for i, sample := range samples {
-	//	if sample.HeaterState {
-	//		symbol = "circle"
-	//	} else {
-	//		symbol = "diamond"
-	//	}
-	//	xTime[i] = sample.Time.Unix()
-	//	yTemperature[i] = opts.LineData{Value: sample.Temperature, Symbol: symbol}
-	//}
-	line.SetXAxis(xTime).
-		AddSeries("Temperature", yTemperature)
-	err := line.Render(w)
-	ws.logger.Infof("build graph based on %ws last metrics", len(samples))
-	if err != nil {
-		ws.logger.Infof("Unable to render graph. %v", err.Error())
-	}
-}
-
 // Start is the main daemon loop
 func (ws *weatherStationImpl) Start() {
-	defer ws.wg.Done()
+	defer func(bus i2c.BusCloser) {
+		err := bus.Close()
+		if err != nil {
+			ws.logger.Errorf("error: %s", err.Error())
+		}
+	}(ws.bus)
 	ws.logger.Info("Weather station starting...")
 
 	envCh, err := ws.sensor.SenseContinuous(scanFreq)
@@ -120,8 +97,38 @@ func (ws *weatherStationImpl) Start() {
 	}
 }
 
-// NewWeatherStation return a new instance of a weatherStationImpl daemon
-func NewWeatherStation() weather_station.WeatherStation {
+func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
+	// create a new line instance
+	line := charts.NewLine()
+	// set some global options like Title/Legend/ToolTip or anything else
+	line.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
+		charts.WithTitleOpts(opts.Title{
+			Title: "Temperature",
+		}))
+	samples := ws.Storage.GetEvents(time.Minute * 5)
+	xTime := make([]int64, len(samples))
+	yTemperature := make([]opts.LineData, len(samples))
+	//var symbol string
+	//for i, sample := range samples {
+	//	if sample.HeaterState {
+	//		symbol = "circle"
+	//	} else {
+	//		symbol = "diamond"
+	//	}
+	//	xTime[i] = sample.Time.Unix()
+	//	yTemperature[i] = opts.LineData{Value: sample.Temperature, Symbol: symbol}
+	//}
+	line.SetXAxis(xTime).
+		AddSeries("Temperature", yTemperature)
+	err := line.Render(w)
+	ws.logger.Infof("build graph based on %ws last metrics", len(samples))
+	if err != nil {
+		ws.logger.Infof("Unable to render graph. %v", err.Error())
+	}
+}
 
+// NewWeatherStation return a new instance of a WeatherStation daemon
+func NewWeatherStation() weather_station.WeatherStation {
 	return &weatherStationImpl{}
 }

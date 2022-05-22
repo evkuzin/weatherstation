@@ -9,7 +9,7 @@ import (
 	"periph.io/x/host/v3"
 )
 
-func peripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
+func peripheralInitialisation(logger *logrus.Logger) (i2c.BusCloser, *bmxx80.Dev, error) {
 	// Make sure peripheral is initialized.
 	state, err := host.Init()
 	if err != nil {
@@ -47,12 +47,6 @@ func peripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
 	} else {
 		logger.Debugf("I2C bus open call successful. Got: %v", bus.String())
 	}
-	defer func(bus i2c.BusCloser) {
-		err := bus.Close()
-		if err != nil {
-			logger.Errorf("error: %s", err.Error())
-		}
-	}(bus)
 
 	// Open a handle to a bme280/bmp280 connected on the I²C bus using Indoor navigation:
 	// continuous sampling at 40ms with filter F16, pressure
@@ -68,5 +62,5 @@ func peripheralInitialisation(logger *logrus.Logger) (*bmxx80.Dev, error) {
 		logger.Fatal(err)
 	}
 
-	return sensor, err
+	return bus, sensor, err
 }
