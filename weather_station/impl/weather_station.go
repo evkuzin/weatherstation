@@ -37,6 +37,8 @@ type weatherStationImpl struct {
 }
 
 func (ws *weatherStationImpl) Init(config *config.Config, logger *logrus.Logger) error {
+	ws.logger = logger
+
 	bus, sensor, err := peripheralInitialisation(logger)
 	if err != nil {
 		return err
@@ -49,7 +51,6 @@ func (ws *weatherStationImpl) Init(config *config.Config, logger *logrus.Logger)
 	ws.logger.Infof("Telegram authorized on account %s", bot.Self.UserName)
 	go ws.telegramStart()
 	ws.sensor = sensor
-	ws.logger = logger
 	ws.bus = bus
 	ws.tg = bot
 	ws.Storage = storage.NewStorage()
