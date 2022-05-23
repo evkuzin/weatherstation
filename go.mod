@@ -29,6 +29,4 @@ require (
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/text v0.3.7 // indirect
-	github.com/jackc/pgx/v4 v4.16.1 // indirect
-	github.com/jackc/pgconn v1.12.1 // indirect
 )
