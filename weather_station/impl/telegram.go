@@ -4,7 +4,6 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io/ioutil"
-	"os"
 	"periph.io/x/conn/v3/physic"
 	"time"
 )
@@ -64,15 +63,16 @@ func (ws *weatherStationImpl) telegramStart() {
 					ws.logger.Warnf("cannot write temporary file: %s", err)
 				}
 				ws.createGraph(file)
+				ws.logger.Infof("file %s with metrics ready to send to %s", file.Name(), update.Message.From.UserName)
 				msg := tgbotapi.NewDocument(update.Message.Chat.ID, tgbotapi.FilePath(file.Name()))
 				_, err = ws.tg.Send(msg)
 				if err != nil {
 					ws.logger.Warnf("error: %s", err)
 				}
-				err = os.Remove(file.Name())
-				if err != nil {
-					ws.logger.Warnf("cannot remove temp file: %s", err)
-				}
+				//err = os.Remove(file.Name())
+				//if err != nil {
+				//	ws.logger.Warnf("cannot remove temp file: %s", err)
+				//}
 			}
 
 		}

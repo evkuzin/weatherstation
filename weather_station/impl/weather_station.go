@@ -113,9 +113,10 @@ func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) 
 }
 
 func (ws *weatherStationImpl) createGraph(w io.Writer) {
+	duration := time.Hour * 5
 	// create a new line instance
 	line := charts.NewLine()
-	samples := ws.Storage.GetEvents(time.Hour * 5)
+	samples := ws.Storage.GetEvents(duration)
 	xTime := make([]time.Time, len(samples))
 	yPressure := make([]opts.LineData, len(samples))
 	var maxY int64
@@ -159,7 +160,7 @@ func (ws *weatherStationImpl) createGraph(w io.Writer) {
 	line.SetXAxis(xTime).
 		AddSeries("Pressure", yPressure)
 	err := line.Render(w)
-	ws.logger.Infof("build graph based on %ws last metrics", len(samples))
+	ws.logger.Infof("build graph based on metrics from last %s", duration)
 	if err != nil {
 		ws.logger.Infof("Unable to render graph. %v", err.Error())
 	}
