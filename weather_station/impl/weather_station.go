@@ -110,6 +110,25 @@ func (ws *weatherStationImpl) Start() {
 func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 	// create a new line instance
 	line := charts.NewLine()
+	samples := ws.Storage.GetEvents(time.Hour * 5)
+	xTime := make([]time.Time, len(samples))
+	yPressure := make([]opts.LineData, len(samples))
+	var maxY int64
+	var minY int64
+	if len(samples) > 0 {
+		maxY = samples[0].Pressure
+		minY = samples[0].Pressure
+	}
+	for i, sample := range samples {
+		xTime[i] = sample.Time
+		yPressure[i] = opts.LineData{Value: tokHPa(sample.Pressure)}
+		if maxY < sample.Pressure {
+			maxY = sample.Pressure
+		}
+		if minY > sample.Pressure {
+			minY = sample.Pressure
+		}
+	}
 	// set some global options like Title/Legend/ToolTip or anything else
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
@@ -118,16 +137,10 @@ func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) 
 			Title: "Pressure graph",
 		}),
 		charts.WithYAxisOpts(opts.YAxis{
-			Min: 90,
-			Max: 110,
+			Min: float64(minY) - 0.005,
+			Max: float64(maxY) + 0.005,
 		}))
-	samples := ws.Storage.GetEvents(time.Hour * 5)
-	xTime := make([]time.Time, len(samples))
-	yPressure := make([]opts.LineData, len(samples))
-	for i, sample := range samples {
-		xTime[i] = sample.Time
-		yPressure[i] = opts.LineData{Value: tokHPa(sample.Pressure)}
-	}
+
 	//var symbol string
 	//for i, sample := range samples {
 	//	if sample.HeaterState {
