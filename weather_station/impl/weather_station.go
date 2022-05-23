@@ -137,8 +137,8 @@ func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) 
 			Title: "Pressure graph",
 		}),
 		charts.WithYAxisOpts(opts.YAxis{
-			Min: float64(minY) - 0.005,
-			Max: float64(maxY) + 0.005,
+			Min: tokHPa(minY) - 0.005,
+			Max: tokHPa(maxY) + 0.005,
 		}))
 
 	//var symbol string
