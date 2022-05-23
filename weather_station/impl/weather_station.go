@@ -114,11 +114,15 @@ func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) 
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
 		charts.WithTitleOpts(opts.Title{
-			Title: "Temperature",
+			Title: "Pressure graph",
 		}))
-	samples := ws.Storage.GetEvents(time.Minute * 5)
-	xTime := make([]int64, len(samples))
-	yTemperature := make([]opts.LineData, len(samples))
+	samples := ws.Storage.GetEvents(time.Hour * 5)
+	xTime := make([]time.Time, len(samples))
+	yPressure := make([]opts.LineData, len(samples))
+	for i, sample := range samples {
+		xTime[i] = sample.Time
+		yPressure[i] = opts.LineData{Value: tokHPa(sample.Pressure)}
+	}
 	//var symbol string
 	//for i, sample := range samples {
 	//	if sample.HeaterState {
@@ -127,10 +131,10 @@ func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) 
 	//		symbol = "diamond"
 	//	}
 	//	xTime[i] = sample.Time.Unix()
-	//	yTemperature[i] = opts.LineData{Value: sample.Temperature, Symbol: symbol}
+	//	yPressure[i] = opts.LineData{Value: sample.Temperature, Symbol: symbol}
 	//}
 	line.SetXAxis(xTime).
-		AddSeries("Temperature", yTemperature)
+		AddSeries("Pressure", yPressure)
 	err := line.Render(w)
 	ws.logger.Infof("build graph based on %ws last metrics", len(samples))
 	if err != nil {
