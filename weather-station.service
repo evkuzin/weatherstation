@@ -1,0 +1,9 @@
+[Unit]
+After=network.target
+
+[Service]
+WorkingDirectory=/home/pi/weatherstation
+ExecStart=/home/pi/weatherstation/weatherstation
+
+[Install]
+WantedBy=multi-user.target
