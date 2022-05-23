@@ -2,8 +2,11 @@ package impl
 
 import (
 	"fmt"
+	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io/ioutil"
+	"log"
+	"os"
 	"periph.io/x/conn/v3/physic"
 	"time"
 )
@@ -11,7 +14,8 @@ import (
 var buttons = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("avg stats"),
-		tgbotapi.NewKeyboardButton("graph"),
+		tgbotapi.NewKeyboardButton("graph html"),
+		tgbotapi.NewKeyboardButton("graph pdf"),
 	),
 )
 
@@ -57,22 +61,84 @@ func (ws *weatherStationImpl) telegramStart() {
 				if err != nil {
 					ws.logger.Warnf("error: %s", err)
 				}
-			case "graph":
+			case "graph html":
 				file, err := ioutil.TempFile("/tmp", "weather-station-*.html")
 				if err != nil {
-					ws.logger.Warnf("cannot write temporary file: %s", err)
+					ws.logger.Warnf("cannot write temporary htmlFile: %s", err)
 				}
 				ws.createGraph(file)
-				ws.logger.Infof("file %s with metrics ready to send to %s", file.Name(), update.Message.From.UserName)
+				ws.logger.Infof("htmlFile %s with metrics ready to send to %s", file.Name(), update.Message.From.UserName)
 				msg := tgbotapi.NewDocument(update.Message.Chat.ID, tgbotapi.FilePath(file.Name()))
 				_, err = ws.tg.Send(msg)
 				if err != nil {
 					ws.logger.Warnf("error: %s", err)
 				}
-				//err = os.Remove(file.Name())
-				//if err != nil {
-				//	ws.logger.Warnf("cannot remove temp file: %s", err)
-				//}
+				err = os.Remove(file.Name())
+				if err != nil {
+					ws.logger.Warnf("cannot remove temp htmlFile: %s", err)
+				}
+			case "graph pdf":
+				htmlFile, err := ioutil.TempFile("/tmp", "weather-station-*.html")
+				if err != nil {
+					ws.logger.Warnf("cannot write temporary htmlFile: %s", err)
+				}
+				pdfFile, err := ioutil.TempFile("/tmp", "weather-station-*.pdf")
+				if err != nil {
+					ws.logger.Warnf("cannot write temporary pdfFile: %s", err)
+				}
+				ws.createGraph(htmlFile)
+				pdfg, err := wkhtmltopdf.NewPDFGenerator()
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				// Set global options
+				pdfg.Dpi.Set(300)
+				pdfg.Orientation.Set(wkhtmltopdf.OrientationLandscape)
+				pdfg.Grayscale.Set(true)
+
+				// Create a new input page from an URL
+				page := wkhtmltopdf.NewPage(htmlFile.Name())
+
+				page.Zoom.Set(0.95)
+
+				pdfg.AddPage(page)
+
+				err = pdfg.Create()
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				// Write buffer contents to htmlFile on disk
+				err = pdfg.WriteFile(pdfFile.Name())
+				if err != nil {
+					log.Fatal(err)
+				}
+				ws.logger.Infof("pdfFile %s with metrics ready to send to %s", pdfFile.Name(), update.Message.From.UserName)
+				msg := tgbotapi.NewDocument(update.Message.Chat.ID, tgbotapi.FilePath(pdfFile.Name()))
+				_, err = ws.tg.Send(msg)
+				if err != nil {
+					ws.logger.Warnf("error: %s", err)
+				}
+				err = os.Remove(htmlFile.Name())
+				if err != nil {
+					ws.logger.Warnf("cannot remove temp htmlFile: %s", err)
+				}
+				err = os.Remove(pdfFile.Name())
+				if err != nil {
+					ws.logger.Warnf("cannot remove temp htmlFile: %s", err)
+				}
+			default:
+				msgText := "Unsupported.\nPlease press any button."
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
+				msg.Text = msgText
+				msg.ReplyToMessageID = update.Message.MessageID
+				msg.ReplyMarkup = buttons
+
+				_, err := ws.tg.Send(msg)
+				if err != nil {
+					ws.logger.Warnf("error: %s", err)
+				}
 			}
 
 		}

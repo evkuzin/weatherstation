@@ -3,6 +3,7 @@ module github.com/evkuzin/weatherstation
 go 1.18
 
 require (
+	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.7.2
 	github.com/go-echarts/go-echarts/v2 v2.2.4
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/sirupsen/logrus v1.8.1
