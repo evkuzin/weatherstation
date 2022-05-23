@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm/logger"
 	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -77,14 +78,18 @@ func (s *Storage) GetEvents(t time.Duration) []weather_station.Environment {
 }
 
 func (s *Storage) GetAvg(t time.Duration) (int64, error) {
-	var avg int64
+	var avg string
 	row := s.db.Model(&Environment{}).Where("time >= ?", time.Now().Add(-t)).Select("avg(pressure)").Row()
 	err := row.Scan(&avg)
 	if err != nil {
 		s.logger.Warn(context.TODO(), fmt.Sprintf("Storage: %s", err))
 		return 0, err
 	}
-	return avg, nil
+	parseInt, err := strconv.ParseInt(avg, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return parseInt, nil
 }
 
 func NewStorage() Adapter {
