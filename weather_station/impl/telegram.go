@@ -5,7 +5,6 @@ import (
 	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io/ioutil"
-	"log"
 	"os"
 	"periph.io/x/conn/v3/physic"
 	"time"
@@ -89,7 +88,7 @@ func (ws *weatherStationImpl) telegramStart() {
 				ws.createGraph(htmlFile)
 				pdfg, err := wkhtmltopdf.NewPDFGenerator()
 				if err != nil {
-					log.Fatal(err)
+					ws.logger.Warnf("cannot create new pdf generator: %s", err)
 				}
 
 				// Set global options
@@ -106,13 +105,13 @@ func (ws *weatherStationImpl) telegramStart() {
 
 				err = pdfg.Create()
 				if err != nil {
-					log.Fatal(err)
+					ws.logger.Warnf("cannot create new pdf: %s", err)
 				}
 
 				// Write buffer contents to htmlFile on disk
 				err = pdfg.WriteFile(pdfFile.Name())
 				if err != nil {
-					log.Fatal(err)
+					ws.logger.Warnf("cannot write to new pdf: %s", err)
 				}
 				ws.logger.Infof("pdfFile %s with metrics ready to send to %s", pdfFile.Name(), update.Message.From.UserName)
 				msg := tgbotapi.NewDocument(update.Message.Chat.ID, tgbotapi.FilePath(pdfFile.Name()))
