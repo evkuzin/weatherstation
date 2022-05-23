@@ -94,7 +94,6 @@ func (ws *weatherStationImpl) telegramStart() {
 				// Set global options
 				pdfg.Dpi.Set(300)
 				pdfg.Orientation.Set(wkhtmltopdf.OrientationLandscape)
-				pdfg.Grayscale.Set(true)
 
 				// Create a new input page from an URL
 				page := wkhtmltopdf.NewPage(htmlFile.Name())
