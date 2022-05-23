@@ -7,6 +7,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/go-echarts/go-echarts/v2/types"
+	"io"
 	"net/http"
 	"periph.io/x/conn/v3/i2c"
 	"sync"
@@ -108,6 +109,10 @@ func (ws *weatherStationImpl) Start() {
 }
 
 func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
+	ws.createGraph(w)
+}
+
+func (ws *weatherStationImpl) createGraph(w io.Writer) {
 	// create a new line instance
 	line := charts.NewLine()
 	samples := ws.Storage.GetEvents(time.Hour * 5)
