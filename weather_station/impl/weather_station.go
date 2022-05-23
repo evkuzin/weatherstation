@@ -143,6 +143,15 @@ func (ws *weatherStationImpl) createGraph(w io.Writer) {
 		charts.WithYAxisOpts(opts.YAxis{
 			Min: tokHPa(minY) - 0.005,
 			Max: tokHPa(maxY) + 0.005,
+		}),
+		charts.WithTooltipOpts(opts.Tooltip{
+			Show:      true,
+			Trigger:   "axis",
+			TriggerOn: "mousemove",
+			AxisPointer: &opts.AxisPointer{
+				Type: "cross",
+				Snap: true,
+			},
 		}))
 
 	//var symbol string
