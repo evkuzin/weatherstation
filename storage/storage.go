@@ -72,8 +72,18 @@ func (s *Storage) Put(event *weather_station.Environment) error {
 
 func (s *Storage) GetEvents(t time.Duration) []weather_station.Environment {
 	var events []weather_station.Environment
-	s.db.Where("Time > (?)", t).Find(&events)
+	s.db.Where("Time >= (?)", time.Now().Add(-t)).Find(&events)
 	return events
+}
+
+func (s *Storage) GetAvg(t time.Duration) (int64, error) {
+	var avg int64
+	row := s.db.Model(&Environment{}).Where("time >= ?", time.Now().Add(-t)).Select("avg(pressure)").Row()
+	err := row.Scan(&avg)
+	if err != nil {
+		return 0, err
+	}
+	return avg, nil
 }
 
 func NewStorage() Adapter {

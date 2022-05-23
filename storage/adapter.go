@@ -10,4 +10,5 @@ type Adapter interface {
 	Init(config *config.Config) error
 	Put(event *weather_station.Environment) error
 	GetEvents(t time.Duration) []weather_station.Environment
+	GetAvg(t time.Duration) (int64, error)
 }

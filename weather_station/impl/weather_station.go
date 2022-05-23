@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"fmt"
 	"github.com/evkuzin/weatherstation/config"
 	"github.com/evkuzin/weatherstation/storage"
 	"github.com/evkuzin/weatherstation/weather_station"
@@ -14,6 +15,7 @@ import (
 
 	"periph.io/x/conn/v3/physic"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 	"periph.io/x/devices/v3/bmxx80"
 )
@@ -31,6 +33,7 @@ type weatherStationImpl struct {
 	wg      *sync.WaitGroup
 	Storage storage.Adapter
 	bus     i2c.BusCloser
+	tg      *tgbotapi.BotAPI
 }
 
 func (ws *weatherStationImpl) Init(config *config.Config, logger *logrus.Logger) error {
@@ -38,9 +41,17 @@ func (ws *weatherStationImpl) Init(config *config.Config, logger *logrus.Logger)
 	if err != nil {
 		return err
 	}
+	bot, err := tgbotapi.NewBotAPI(config.Telegram.Key)
+	if err != nil {
+		return err
+	}
+	bot.Debug = config.Telegram.Debug
+	ws.logger.Infof("Telegram authorized on account %s", bot.Self.UserName)
+	go ws.telegramStart()
 	ws.sensor = sensor
 	ws.logger = logger
 	ws.bus = bus
+	ws.tg = bot
 	ws.Storage = storage.NewStorage()
 	err = ws.Storage.Init(config)
 	if err != nil {
@@ -124,6 +135,47 @@ func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) 
 	ws.logger.Infof("build graph based on %ws last metrics", len(samples))
 	if err != nil {
 		ws.logger.Infof("Unable to render graph. %v", err.Error())
+	}
+}
+
+func (ws *weatherStationImpl) telegramStart() {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+
+	updates := ws.tg.GetUpdatesChan(u)
+	for update := range updates {
+		if update.Message != nil {
+			ws.logger.Infof("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			avg12h, err := ws.Storage.GetAvg(time.Hour * 12)
+			if err != nil {
+				ws.logger.Warnf("cannot get average: %s", err)
+			}
+			avg6h, err := ws.Storage.GetAvg(time.Hour * 6)
+			if err != nil {
+				ws.logger.Warnf("cannot get average: %s", err)
+			}
+			avg1h, err := ws.Storage.GetAvg(time.Hour)
+			if err != nil {
+				ws.logger.Warnf("cannot get average: %s", err)
+			}
+			avg1m, err := ws.Storage.GetAvg(time.Minute)
+			if err != nil {
+				ws.logger.Warnf("cannot get average: %s", err)
+			}
+			msgText := fmt.Sprintf("12h avg: %s\n6h avg: %s\n1h avg: %s\nCurrent: %s\n",
+				physic.Pressure(avg12h),
+				physic.Pressure(avg6h),
+				physic.Pressure(avg1h),
+				physic.Pressure(avg1m),
+			)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
+			msg.ReplyToMessageID = update.Message.MessageID
+
+			_, err = ws.tg.Send(msg)
+			if err != nil {
+				ws.logger.Warnf("error: %s", err)
+			}
+		}
 	}
 }
 
