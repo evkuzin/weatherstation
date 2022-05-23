@@ -58,7 +58,7 @@ func (ws *weatherStationImpl) telegramStart() {
 					ws.logger.Warnf("error: %s", err)
 				}
 			case "graph":
-				file, err := ioutil.TempFile("/tmp", "weather-station")
+				file, err := ioutil.TempFile("/tmp", "weather-station-*.html")
 				if err != nil {
 					ws.logger.Warnf("cannot write temporary file: %s", err)
 				}
