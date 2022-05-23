@@ -1,7 +1,6 @@
 package impl
 
 import (
-	"fmt"
 	"github.com/evkuzin/weatherstation/config"
 	"github.com/evkuzin/weatherstation/storage"
 	"github.com/evkuzin/weatherstation/weather_station"
@@ -136,47 +135,6 @@ func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) 
 	ws.logger.Infof("build graph based on %ws last metrics", len(samples))
 	if err != nil {
 		ws.logger.Infof("Unable to render graph. %v", err.Error())
-	}
-}
-
-func (ws *weatherStationImpl) telegramStart() {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-
-	updates := ws.tg.GetUpdatesChan(u)
-	for update := range updates {
-		if update.Message != nil {
-			ws.logger.Infof("[%s] %s", update.Message.From.UserName, update.Message.Text)
-			avg12h, err := ws.Storage.GetAvg(time.Hour * 12)
-			if err != nil {
-				ws.logger.Warnf("cannot get average: %s", err)
-			}
-			avg6h, err := ws.Storage.GetAvg(time.Hour * 6)
-			if err != nil {
-				ws.logger.Warnf("cannot get average: %s", err)
-			}
-			avg1h, err := ws.Storage.GetAvg(time.Hour)
-			if err != nil {
-				ws.logger.Warnf("cannot get average: %s", err)
-			}
-			avg1m, err := ws.Storage.GetAvg(time.Minute)
-			if err != nil {
-				ws.logger.Warnf("cannot get average: %s", err)
-			}
-			msgText := fmt.Sprintf("12h avg: %s\n6h avg: %s\n1h avg: %s\nCurrent: %s\n",
-				physic.Pressure(avg12h),
-				physic.Pressure(avg6h),
-				physic.Pressure(avg1h),
-				physic.Pressure(avg1m),
-			)
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
-			msg.ReplyToMessageID = update.Message.MessageID
-
-			_, err = ws.tg.Send(msg)
-			if err != nil {
-				ws.logger.Warnf("error: %s", err)
-			}
-		}
 	}
 }
 
