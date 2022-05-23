@@ -137,7 +137,7 @@ func (ws *weatherStationImpl) createGraph(w io.Writer) {
 	}
 	// set some global options like Title/Legend/ToolTip or anything else
 	line.SetGlobalOptions(
-		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemePurplePassion}),
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
 		charts.WithDataZoomOpts(opts.DataZoom{}),
 		charts.WithTitleOpts(opts.Title{Title: "Pressure graph"}),
 		charts.WithYAxisOpts(opts.YAxis{
