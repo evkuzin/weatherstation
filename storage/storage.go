@@ -81,6 +81,7 @@ func (s *Storage) GetAvg(t time.Duration) (int64, error) {
 	row := s.db.Model(&Environment{}).Where("time >= ?", time.Now().Add(-t)).Select("avg(pressure)").Row()
 	err := row.Scan(&avg)
 	if err != nil {
+		s.logger.Warn(context.TODO(), fmt.Sprintf("Storage: %s", err))
 		return 0, err
 	}
 	return avg, nil
