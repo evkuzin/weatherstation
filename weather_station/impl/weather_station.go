@@ -116,6 +116,10 @@ func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) 
 		charts.WithDataZoomOpts(opts.DataZoom{}),
 		charts.WithTitleOpts(opts.Title{
 			Title: "Pressure graph",
+		}),
+		charts.WithYAxisOpts(opts.YAxis{
+			Min: 90,
+			Max: 110,
 		}))
 	samples := ws.Storage.GetEvents(time.Hour * 5)
 	xTime := make([]time.Time, len(samples))
