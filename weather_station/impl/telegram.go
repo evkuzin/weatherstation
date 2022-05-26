@@ -10,14 +10,6 @@ import (
 	"time"
 )
 
-//var buttons = tgbotapi.NewReplyKeyboard(
-//	tgbotapi.NewKeyboardButtonRow(
-//		tgbotapi.NewKeyboardButton("avg stats"),
-//		tgbotapi.NewKeyboardButton("graph html"),
-//		tgbotapi.NewKeyboardButton("graph pdf"),
-//	),
-//)
-
 func (ws *weatherStationImpl) telegramStart() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
