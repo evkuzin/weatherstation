@@ -7,4 +7,3 @@ database:
 telegram:
   key: ""
   debug: False
-  enable: True

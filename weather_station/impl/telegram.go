@@ -10,13 +10,13 @@ import (
 	"time"
 )
 
-var buttons = tgbotapi.NewReplyKeyboard(
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("avg stats"),
-		tgbotapi.NewKeyboardButton("graph html"),
-		tgbotapi.NewKeyboardButton("graph pdf"),
-	),
-)
+//var buttons = tgbotapi.NewReplyKeyboard(
+//	tgbotapi.NewKeyboardButtonRow(
+//		tgbotapi.NewKeyboardButton("avg stats"),
+//		tgbotapi.NewKeyboardButton("graph html"),
+//		tgbotapi.NewKeyboardButton("graph pdf"),
+//	),
+//)
 
 func (ws *weatherStationImpl) telegramStart() {
 	u := tgbotapi.NewUpdate(0)
@@ -27,7 +27,7 @@ func (ws *weatherStationImpl) telegramStart() {
 		if update.Message != nil {
 			ws.logger.Infof("[%s]: '%s'", update.Message.From.UserName, update.Message.Text)
 			switch update.Message.Text {
-			case "avg stats":
+			case "/avg":
 				avg12h, err := ws.Storage.GetAvg(time.Hour * 12)
 				if err != nil {
 					ws.logger.Warnf("cannot get average: %s", err)
@@ -54,13 +54,12 @@ func (ws *weatherStationImpl) telegramStart() {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
 				msg.Text = msgText
 				msg.ReplyToMessageID = update.Message.MessageID
-				msg.ReplyMarkup = buttons
 
 				_, err = ws.tg.Send(msg)
 				if err != nil {
 					ws.logger.Warnf("error: %s", err)
 				}
-			case "graph html":
+			case "/graph":
 				file, err := ioutil.TempFile("/tmp", "weather-station-*.html")
 				if err != nil {
 					ws.logger.Warnf("cannot write temporary htmlFile: %s", err)
@@ -76,7 +75,7 @@ func (ws *weatherStationImpl) telegramStart() {
 				if err != nil {
 					ws.logger.Warnf("cannot remove temp htmlFile: %s", err)
 				}
-			case "graph pdf":
+			case "/pdf":
 				htmlFile, err := ioutil.TempFile("/tmp", "weather-station-*.html")
 				if err != nil {
 					ws.logger.Warnf("cannot write temporary htmlFile: %s", err)
@@ -127,11 +126,10 @@ func (ws *weatherStationImpl) telegramStart() {
 					ws.logger.Warnf("cannot remove temp htmlFile: %s", err)
 				}
 			default:
-				msgText := "Unsupported.\nPlease press any button."
+				msgText := "Unsupported.\nPlease choose any command from the menu."
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
 				msg.Text = msgText
 				msg.ReplyToMessageID = update.Message.MessageID
-				msg.ReplyMarkup = buttons
 
 				_, err := ws.tg.Send(msg)
 				if err != nil {
