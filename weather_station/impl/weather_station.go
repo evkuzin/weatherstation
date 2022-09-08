@@ -135,11 +135,15 @@ func (ws *weatherStationImpl) createGraph(w io.Writer) {
 
 func (ws *weatherStationImpl) createPngGraph(w *os.File) {
 	line := ws.createBaseGraph()
-	line.BaseConfiguration.Feature.SaveAsImage = &opts.ToolBoxFeatureSaveAsImage{
-		Show: false,
-		Type: "png",
-		Name: w.Name(),
-	}
+	line.SetGlobalOptions(charts.WithToolboxOpts(opts.Toolbox{
+		Feature: &opts.ToolBoxFeature{
+			SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
+				Show: false,
+				Type: "png",
+				Name: w.Name(),
+			},
+		},
+	}))
 
 	//var symbol string
 	//for i, sample := range samples {
