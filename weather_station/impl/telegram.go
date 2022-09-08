@@ -117,6 +117,13 @@ func (ws *weatherStationImpl) telegramStart() {
 				if err != nil {
 					ws.logger.Warnf("cannot remove temp htmlFile: %s", err)
 				}
+			case "/png":
+				pngFile, err := ioutil.TempFile("/tmp", "weather-station-*.png")
+				if err != nil {
+					ws.logger.Warnf("cannot write temporary png: %s", err)
+				}
+
+				ws.createPngGraph(pngFile)
 			default:
 				msgText := "Unsupported.\nPlease choose any command from the menu."
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)

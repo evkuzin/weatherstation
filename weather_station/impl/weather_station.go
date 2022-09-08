@@ -9,6 +9,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/types"
 	"io"
 	"net/http"
+	"os"
 	"periph.io/x/conn/v3/i2c"
 	"sync"
 	"time"
@@ -113,6 +114,51 @@ func (ws *weatherStationImpl) ServeHTTP(w http.ResponseWriter, _ *http.Request) 
 }
 
 func (ws *weatherStationImpl) createGraph(w io.Writer) {
+	line := ws.createBaseGraph()
+
+	//var symbol string
+	//for i, sample := range samples {
+	//	if sample.HeaterState {
+	//		symbol = "circle"
+	//	} else {
+	//		symbol = "diamond"
+	//	}
+	//	xTime[i] = sample.Time.Unix()
+	//	yPressure[i] = opts.LineData{Value: sample.Temperature, Symbol: symbol}
+	//}
+
+	err := line.Render(w)
+	if err != nil {
+		ws.logger.Infof("Unable to render graph. %v", err.Error())
+	}
+}
+
+func (ws *weatherStationImpl) createPngGraph(w *os.File) {
+	line := ws.createBaseGraph()
+	line.BaseConfiguration.Feature.SaveAsImage = &opts.ToolBoxFeatureSaveAsImage{
+		Show: false,
+		Type: "png",
+		Name: w.Name(),
+	}
+
+	//var symbol string
+	//for i, sample := range samples {
+	//	if sample.HeaterState {
+	//		symbol = "circle"
+	//	} else {
+	//		symbol = "diamond"
+	//	}
+	//	xTime[i] = sample.Time.Unix()
+	//	yPressure[i] = opts.LineData{Value: sample.Temperature, Symbol: symbol}
+	//}
+
+	err := line.Render(w)
+	if err != nil {
+		ws.logger.Infof("Unable to render graph. %v", err.Error())
+	}
+}
+
+func (ws *weatherStationImpl) createBaseGraph() *charts.Line {
 	duration := time.Hour * 5
 	// create a new line instance
 	line := charts.NewLine()
@@ -153,24 +199,10 @@ func (ws *weatherStationImpl) createGraph(w io.Writer) {
 				Snap: true,
 			},
 		}))
-
-	//var symbol string
-	//for i, sample := range samples {
-	//	if sample.HeaterState {
-	//		symbol = "circle"
-	//	} else {
-	//		symbol = "diamond"
-	//	}
-	//	xTime[i] = sample.Time.Unix()
-	//	yPressure[i] = opts.LineData{Value: sample.Temperature, Symbol: symbol}
-	//}
 	line.SetXAxis(xTime).
 		AddSeries("Pressure", yPressure)
-	err := line.Render(w)
 	ws.logger.Infof("build graph based on metrics from last %s", duration)
-	if err != nil {
-		ws.logger.Infof("Unable to render graph. %v", err.Error())
-	}
+	return line
 }
 
 // NewWeatherStation return a new instance of a WeatherStation daemon
