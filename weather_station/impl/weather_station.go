@@ -126,7 +126,15 @@ func (ws *weatherStationImpl) createGraph(w io.Writer) {
 	//	xTime[i] = sample.Time.Unix()
 	//	yPressure[i] = opts.LineData{Value: sample.Temperature, Symbol: symbol}
 	//}
-
+	line.SetGlobalOptions(charts.WithTooltipOpts(opts.Tooltip{
+		Show:      true,
+		Trigger:   "axis",
+		TriggerOn: "mousemove",
+		AxisPointer: &opts.AxisPointer{
+			Type: "cross",
+			Snap: true,
+		},
+	}))
 	err := line.Render(w)
 	if err != nil {
 		ws.logger.Infof("Unable to render graph. %v", err.Error())
@@ -143,7 +151,9 @@ func (ws *weatherStationImpl) createPngGraph(w *os.File) {
 				Name: w.Name(),
 			},
 		},
-	}))
+	}),
+		charts.WithDataZoomOpts(opts.DataZoom{}),
+	)
 
 	//var symbol string
 	//for i, sample := range samples {
@@ -188,20 +198,10 @@ func (ws *weatherStationImpl) createBaseGraph() *charts.Line {
 	// set some global options like Title/Legend/ToolTip or anything else
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
-		charts.WithDataZoomOpts(opts.DataZoom{}),
 		charts.WithTitleOpts(opts.Title{Title: "Pressure graph"}),
 		charts.WithYAxisOpts(opts.YAxis{
 			Min: tokHPa(minY) - 0.005,
 			Max: tokHPa(maxY) + 0.005,
-		}),
-		charts.WithTooltipOpts(opts.Tooltip{
-			Show:      true,
-			Trigger:   "axis",
-			TriggerOn: "mousemove",
-			AxisPointer: &opts.AxisPointer{
-				Type: "cross",
-				Snap: true,
-			},
 		}))
 	line.SetXAxis(xTime).
 		AddSeries("Pressure", yPressure)
