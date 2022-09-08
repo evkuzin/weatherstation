@@ -124,6 +124,16 @@ func (ws *weatherStationImpl) telegramStart() {
 				}
 
 				ws.createPngGraph(pngFile)
+				ws.logger.Infof("png %s with metrics ready to send to %s", pngFile.Name(), update.Message.From.UserName)
+				msg := tgbotapi.NewDocument(update.Message.Chat.ID, tgbotapi.FilePath(pngFile.Name()))
+				_, err = ws.tg.Send(msg)
+				if err != nil {
+					ws.logger.Warnf("error: %s", err)
+				}
+				err = os.Remove(pngFile.Name())
+				if err != nil {
+					ws.logger.Warnf("cannot remove temp pngFile: %s", err)
+				}
 			default:
 				msgText := "Unsupported.\nPlease choose any command from the menu."
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
