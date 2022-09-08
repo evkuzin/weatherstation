@@ -146,7 +146,7 @@ func (ws *weatherStationImpl) createPngGraph(w *os.File) {
 	line.SetGlobalOptions(charts.WithToolboxOpts(opts.Toolbox{
 		Feature: &opts.ToolBoxFeature{
 			SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
-				Show: false,
+				Show: true,
 				Type: "png",
 				Name: w.Name(),
 			},
